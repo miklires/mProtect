@@ -19,6 +19,7 @@ public final class ConfigManager {
     private Set<String> blockedCommands = Set.of();
     private Set<String> blockedNamespaces = Set.of();
     private Set<String> blockedRoots = Set.of();
+    private long revision;
 
     public ConfigManager(MProtectPlugin plugin) {
         this.plugin = plugin;
@@ -36,6 +37,7 @@ public final class ConfigManager {
         blockedRoots = lower(config.getStringList("commands.blocked-roots"));
         validate(config);
         plugin.saveConfig();
+        revision++;
     }
 
     private void validate(FileConfiguration config) {
@@ -128,4 +130,5 @@ public final class ConfigManager {
     public int integer(String path, int fallback) { return plugin.getConfig().getInt(path, fallback); }
     public double decimal(String path, double fallback) { return plugin.getConfig().getDouble(path, fallback); }
     public String text(String path, String fallback) { return plugin.getConfig().getString(path, fallback); }
+    public long revision() { return revision; }
 }

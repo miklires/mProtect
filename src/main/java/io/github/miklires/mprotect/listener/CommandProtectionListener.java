@@ -18,7 +18,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class CommandProtectionListener implements Listener {
     private final MProtectPlugin plugin;
-    private final Map<UUID, RateWindow> rates = new ConcurrentHashMap<>();
+    private final Map<UUID, RateState> rates = new ConcurrentHashMap<>();
 
     public CommandProtectionListener(MProtectPlugin plugin) { this.plugin = plugin; }
 
@@ -33,8 +33,11 @@ public final class CommandProtectionListener implements Listener {
         }
         int limit = plugin.config().integer("commands.rate-limit.commands", 12);
         int seconds = plugin.config().integer("commands.rate-limit.window-seconds", 3);
-        RateWindow rate = rates.computeIfAbsent(event.getPlayer().getUniqueId(), ignored -> new RateWindow(limit, Duration.ofSeconds(seconds)));
-        if (!rate.allow(System.nanoTime())) {
+        long revision = plugin.config().revision();
+        RateState state = rates.compute(event.getPlayer().getUniqueId(), (ignored, current) ->
+                current == null || current.revision() != revision
+                        ? new RateState(revision, new RateWindow(limit, Duration.ofSeconds(seconds))) : current);
+        if (!state.window().allow(System.nanoTime())) {
             block(event, "command rate exceeded", "command-rate");
             return;
         }
@@ -59,4 +62,6 @@ public final class CommandProtectionListener implements Listener {
         plugin.violations().record(event.getPlayer(), CheckType.COMMANDS, detail);
         plugin.messages().send(event.getPlayer(), message);
     }
+
+    private record RateState(long revision, RateWindow window) {}
 }

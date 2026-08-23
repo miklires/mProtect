@@ -17,7 +17,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public final class ChunkLoadProtectionListener implements Listener {
     private final MProtectPlugin plugin;
-    private final Map<UUID, RateWindow> rates = new ConcurrentHashMap<>();
+    private final Map<UUID, RateState> rates = new ConcurrentHashMap<>();
 
     public ChunkLoadProtectionListener(MProtectPlugin plugin) { this.plugin = plugin; }
 
@@ -30,8 +30,11 @@ public final class ChunkLoadProtectionListener implements Listener {
         if ((from.getBlockX() >> 4) == (to.getBlockX() >> 4) && (from.getBlockZ() >> 4) == (to.getBlockZ() >> 4)) return;
         int limit = plugin.config().integer("chunk-loads.max-new-chunks", 24);
         int seconds = plugin.config().integer("chunk-loads.window-seconds", 5);
-        RateWindow rate = rates.computeIfAbsent(event.getPlayer().getUniqueId(), ignored -> new RateWindow(limit, Duration.ofSeconds(seconds)));
-        if (!rate.allow(System.nanoTime())) {
+        long revision = plugin.config().revision();
+        RateState state = rates.compute(event.getPlayer().getUniqueId(), (ignored, current) ->
+                current == null || current.revision() != revision
+                        ? new RateState(revision, new RateWindow(limit, Duration.ofSeconds(seconds))) : current);
+        if (!state.window().allow(System.nanoTime())) {
             event.setCancelled(true);
             plugin.violations().record(event.getPlayer(), CheckType.CHUNKS, "chunk movement rate exceeded " + limit + " per " + seconds + "s");
             plugin.messages().send(event.getPlayer(), "blocked");
@@ -40,4 +43,6 @@ public final class ChunkLoadProtectionListener implements Listener {
 
     @EventHandler
     public void onQuit(PlayerQuitEvent event) { rates.remove(event.getPlayer().getUniqueId()); }
+
+    private record RateState(long revision, RateWindow window) {}
 }

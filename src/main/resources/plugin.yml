@@ -5,6 +5,7 @@ api-version: '26.2'
 author: miklires
 description: Configurable exploit checks and server hardening for Paper-compatible servers
 load: STARTUP
+folia-supported: true
 libraries:
   - com.h2database:h2:2.3.232
 

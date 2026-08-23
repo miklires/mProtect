@@ -122,10 +122,3 @@ chunk-loads:
   enabled: true
   max-new-chunks: 24
   window-seconds: 5
-
-integrations:
-  mbans:
-    enabled: false
-    threshold: 5
-    window-minutes: 10
-    command: "warn {player} Automated mProtect threshold: {check}"
