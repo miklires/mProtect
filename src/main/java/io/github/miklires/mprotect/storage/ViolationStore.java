@@ -41,6 +41,7 @@ public final class ViolationStore implements AutoCloseable {
     public CompletableFuture<Void> start() {
         return CompletableFuture.runAsync(() -> {
             try {
+                Class.forName("org.h2.Driver", true, plugin.getClass().getClassLoader());
                 Files.createDirectories(plugin.getDataFolder().toPath().resolve("data"));
                 try (Connection connection = connection(); Statement statement = connection.createStatement()) {
                     statement.executeUpdate("CREATE TABLE IF NOT EXISTS mprotect_schema (version INTEGER PRIMARY KEY, applied_at BIGINT NOT NULL)");
@@ -53,7 +54,7 @@ public final class ViolationStore implements AutoCloseable {
                     }
                 }
                 cleanup();
-            } catch (SQLException | IOException exception) {
+            } catch (SQLException | IOException | ClassNotFoundException exception) {
                 throw new IllegalStateException("Could not initialize violation storage", exception);
             }
         }, executor);

@@ -21,6 +21,8 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
+import java.util.concurrent.CompletionException;
+import java.util.logging.Level;
 
 public final class MProtectPlugin extends JavaPlugin {
     private ConfigManager config;
@@ -39,7 +41,8 @@ public final class MProtectPlugin extends JavaPlugin {
         store = new ViolationStore(this);
         violations = new ViolationService(this, store);
         store.start().exceptionally(exception -> {
-            getLogger().severe(exception.getCause() == null ? exception.getMessage() : exception.getCause().getMessage());
+            Throwable failure = exception instanceof CompletionException && exception.getCause() != null ? exception.getCause() : exception;
+            getLogger().log(Level.SEVERE, "Could not initialize violation storage", failure);
             return null;
         });
 
