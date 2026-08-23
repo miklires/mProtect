@@ -1,0 +1,63 @@
+name: mProtect
+version: ${version}
+main: io.github.miklires.mprotect.MProtectPlugin
+api-version: '26.2'
+author: miklires
+description: Configurable exploit checks and server hardening for Paper-compatible servers
+load: STARTUP
+libraries:
+  - com.h2database:h2:2.3.232
+
+permissions:
+  mprotect.alerts:
+    description: Receive staff violation alerts
+    default: op
+  mprotect.command.status:
+    description: View protection status
+    default: op
+  mprotect.command.violations:
+    description: Query recorded violations
+    default: op
+  mprotect.command.test:
+    description: Test protection checks without creating a violation
+    default: op
+  mprotect.command.reload:
+    description: Reload safe configuration values
+    default: op
+  mprotect.bypass.items:
+    description: Bypass item validation
+    default: false
+  mprotect.bypass.commands:
+    description: Bypass command protection
+    default: false
+  mprotect.bypass.books:
+    description: Bypass book validation
+    default: false
+  mprotect.bypass.signs:
+    description: Bypass sign validation
+    default: false
+  mprotect.bypass.anvils:
+    description: Bypass anvil validation
+    default: false
+  mprotect.bypass.creative:
+    description: Bypass creative and spectator restrictions
+    default: false
+  mprotect.bypass.chunks:
+    description: Bypass chunk-load rate limits
+    default: false
+  mprotect.admin:
+    description: Full administrative access
+    default: op
+    children:
+      mprotect.alerts: true
+      mprotect.command.status: true
+      mprotect.command.violations: true
+      mprotect.command.test: true
+      mprotect.command.reload: true
+      mprotect.bypass.items: true
+      mprotect.bypass.commands: true
+      mprotect.bypass.books: true
+      mprotect.bypass.signs: true
+      mprotect.bypass.anvils: true
+      mprotect.bypass.creative: true
+      mprotect.bypass.chunks: true
