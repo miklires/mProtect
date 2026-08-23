@@ -9,7 +9,7 @@ metrics:
 
 updates:
   enabled: true
-  modrinth-project-id: ""
+  modrinth-project-id: "mprotect"
 
 alerts:
   staff-chat: true

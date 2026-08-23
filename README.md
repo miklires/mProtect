@@ -7,6 +7,7 @@
     <img alt="Java 25" src="https://img.shields.io/badge/Java-25-f89820?style=for-the-badge&logo=openjdk&logoColor=white">
   </p>
   <p>
+    <a href="https://modrinth.com/plugin/mprotect"><img alt="Modrinth" src="https://img.shields.io/badge/Modrinth-download-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white"></a>
     <a href="https://github.com/miklires/mProtect"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-source-181717?style=for-the-badge&logo=github"></a>
     <a href="https://github.com/miklires/mProtect/issues"><img alt="Issues" src="https://img.shields.io/badge/GitHub-issues-181717?style=for-the-badge&logo=github"></a>
     <a href="https://discord.gg/pes25cnWKy"><img alt="Discord" src="https://img.shields.io/badge/Discord-support-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
