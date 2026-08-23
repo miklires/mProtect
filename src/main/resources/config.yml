@@ -29,6 +29,7 @@ items:
   enabled: true
   action: REMOVE
   replacement: AIR
+  reject-overstacked: true
   fallback-scan-minutes: 5
   blocked-materials:
     - BEDROCK

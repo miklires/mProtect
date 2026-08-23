@@ -13,6 +13,7 @@ import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BundleMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -29,6 +30,9 @@ public final class ItemValidator {
     public ValidationResult validate(ItemStack stack) {
         if (stack == null || stack.getType().isAir()) return ValidationResult.pass();
         if (plugin.config().blockedMaterials().contains(stack.getType())) return ValidationResult.fail("blocked material " + stack.getType());
+        if (plugin.config().bool("items.reject-overstacked", true) && stack.getAmount() > stack.getMaxStackSize()) {
+            return ValidationResult.fail("stack amount " + stack.getAmount() + " > " + stack.getMaxStackSize());
+        }
         ValidationResult enchantments = enchantments(stack);
         if (!enchantments.safe()) return enchantments;
         ValidationResult attributes = attributes(stack);
@@ -110,7 +114,7 @@ public final class ItemValidator {
         if (!stack.hasItemMeta()) return ValidationResult.pass();
         Iterable<ItemStack> contents = null;
         if (stack.getItemMeta() instanceof BlockStateMeta blockStateMeta && blockStateMeta.getBlockState() instanceof Container container) {
-            contents = java.util.List.of(container.getInventory().getContents());
+            contents = Arrays.asList(container.getInventory().getContents());
         } else if (stack.getItemMeta() instanceof BundleMeta bundleMeta) {
             contents = bundleMeta.getItems();
         }
@@ -128,6 +132,9 @@ public final class ItemValidator {
 
     private ValidationResult validateNested(ItemStack stack, int depth, Counter counter) {
         if (plugin.config().blockedMaterials().contains(stack.getType())) return ValidationResult.fail("blocked material inside container " + stack.getType());
+        if (plugin.config().bool("items.reject-overstacked", true) && stack.getAmount() > stack.getMaxStackSize()) {
+            return ValidationResult.fail("overstacked item inside container " + stack.getType());
+        }
         ValidationResult enchantments = enchantments(stack);
         if (!enchantments.safe()) return enchantments;
         ValidationResult attributes = attributes(stack);

@@ -52,7 +52,7 @@ The generated `config.yml` is the source of truth. Missing options are restored 
 
 ### Items and containers
 
-`items.blocked-materials` contains materials players must not possess. Item validation also rejects unsafe enchantments, duplicate or excessive attribute modifiers, oversized serialized data, and nested shulker boxes or bundles beyond the configured depth and item count.
+`items.blocked-materials` contains materials players must not possess. Item validation also rejects overstacked items, unsafe enchantments, duplicate or excessive attribute modifiers, oversized serialized data, and nested shulker boxes or bundles beyond the configured depth and item count. Set `items.reject-overstacked` to `false` only when another plugin intentionally creates stacks above the vanilla limit.
 
 `items.action` accepts:
 
