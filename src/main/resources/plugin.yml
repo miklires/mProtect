@@ -22,6 +22,12 @@ permissions:
   mprotect.command.test:
     description: Test protection checks without creating a violation
     default: op
+  mprotect.command.inspect:
+    description: Inspect the held item without changing it
+    default: op
+  mprotect.command.scan:
+    description: Audit your inventory without changing it
+    default: op
   mprotect.command.reload:
     description: Reload safe configuration values
     default: op
@@ -54,6 +60,8 @@ permissions:
       mprotect.command.status: true
       mprotect.command.violations: true
       mprotect.command.test: true
+      mprotect.command.inspect: true
+      mprotect.command.scan: true
       mprotect.command.reload: true
       mprotect.bypass.items: true
       mprotect.bypass.commands: true

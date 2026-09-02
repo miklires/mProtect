@@ -3,6 +3,7 @@ package io.github.miklires.mprotect.command;
 import io.github.miklires.mprotect.MProtectPlugin;
 import io.github.miklires.mprotect.model.CheckType;
 import io.github.miklires.mprotect.model.ViolationRecord;
+import io.github.miklires.mprotect.check.ItemValidator;
 import io.papermc.paper.command.brigadier.BasicCommand;
 import io.papermc.paper.command.brigadier.CommandSourceStack;
 import org.bukkit.command.CommandSender;
@@ -31,6 +32,8 @@ public final class ProtectCommand implements BasicCommand {
             case "status" -> status(sender);
             case "violations" -> violations(sender, args.length > 1 ? args[1] : null);
             case "test" -> test(sender, args.length > 1 ? args[1] : "");
+            case "inspect" -> inspect(sender);
+            case "scan" -> scan(sender);
             case "reload" -> reload(sender);
             default -> plugin.messages().send(sender, "usage");
         }
@@ -69,6 +72,39 @@ public final class ProtectCommand implements BasicCommand {
                 () -> plugin.messages().send(sender, "test-unknown"));
     }
 
+    private void inspect(CommandSender sender) {
+        if (!allowed(sender, "mprotect.command.inspect")) return;
+        if (!(sender instanceof Player player)) {
+            plugin.messages().send(sender, "player-only");
+            return;
+        }
+        var item = player.getInventory().getItemInMainHand();
+        if (item.getType().isAir()) {
+            plugin.messages().send(player, "inspect-empty");
+            return;
+        }
+        var result = new ItemValidator(plugin).validate(item);
+        plugin.messages().send(player, result.safe() ? "inspect-safe" : "inspect-unsafe",
+                Map.of("material", item.getType().name(), "detail", result.safe() ? "-" : result.detail()));
+    }
+
+    private void scan(CommandSender sender) {
+        if (!allowed(sender, "mprotect.command.scan")) return;
+        if (!(sender instanceof Player player)) {
+            plugin.messages().send(sender, "player-only");
+            return;
+        }
+        ItemValidator validator = new ItemValidator(plugin);
+        int checked = 0;
+        int unsafe = 0;
+        for (var item : player.getInventory().getContents()) {
+            if (item == null || item.getType().isAir()) continue;
+            checked++;
+            if (!validator.validate(item).safe()) unsafe++;
+        }
+        plugin.messages().send(player, "scan-result", Map.of("checked", checked, "unsafe", unsafe));
+    }
+
     private void reload(CommandSender sender) {
         if (!allowed(sender, "mprotect.command.reload")) return;
         plugin.reloadSafeSettings();
@@ -90,7 +126,7 @@ public final class ProtectCommand implements BasicCommand {
     public @NotNull Collection<String> suggest(@NotNull CommandSourceStack source, @NotNull String[] args) {
         String input = args.length == 0 ? "" : args[args.length - 1].toLowerCase(Locale.ROOT);
         List<String> options;
-        if (args.length <= 1) options = List.of("status", "violations", "test", "reload");
+        if (args.length <= 1) options = List.of("status", "violations", "test", "inspect", "scan", "reload");
         else if (args.length == 2 && args[0].equalsIgnoreCase("test")) options = java.util.Arrays.stream(CheckType.values()).map(CheckType::key).toList();
         else if (args.length == 2 && args[0].equalsIgnoreCase("violations")) options = plugin.getServer().getOnlinePlayers().stream().map(Player::getName).toList();
         else options = List.of();
