@@ -55,6 +55,9 @@ permissions:
   mprotect.bypass.portals:
     description: Bypass player portal-use limits
     default: false
+  mprotect.bypass.activity:
+    description: Bypass player activity rate limits
+    default: false
   mprotect.admin:
     description: Full administrative access
     default: op
@@ -74,3 +77,4 @@ permissions:
       mprotect.bypass.creative: true
       mprotect.bypass.chunks: true
       mprotect.bypass.portals: true
+      mprotect.bypass.activity: true

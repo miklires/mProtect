@@ -75,6 +75,10 @@ public final class ConfigManager {
         integer(config, "commands.rate-limit.window-seconds", 1, 300, 3);
         integer(config, "entities.max-per-chunk", 1, 100_000, 120);
         integer(config, "entities.max-per-type-per-chunk", 1, 100_000, 40);
+        rate(config, "entities.spawn-rate", 80, 2);
+        var typeLimits = config.getConfigurationSection("entities.per-type-limits");
+        if (typeLimits != null) for (String key : typeLimits.getKeys(false))
+            integer(config, "entities.per-type-limits." + key, 1, 100_000, 20);
         integer(config, "chunk-loads.max-new-chunks", 1, 10_000, 24);
         integer(config, "chunk-loads.window-seconds", 1, 300, 5);
         rate(config, "redstone", 800, 1);

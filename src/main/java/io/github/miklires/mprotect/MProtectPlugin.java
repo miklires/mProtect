@@ -11,6 +11,7 @@ import io.github.miklires.mprotect.listener.EntityLimitListener;
 import io.github.miklires.mprotect.listener.ExplosionProtectionListener;
 import io.github.miklires.mprotect.listener.ItemProtectionListener;
 import io.github.miklires.mprotect.listener.PhysicsProtectionListener;
+import io.github.miklires.mprotect.listener.PlayerActivityProtectionListener;
 import io.github.miklires.mprotect.listener.RedstoneAutomationListener;
 import io.github.miklires.mprotect.listener.SignProtectionListener;
 import io.github.miklires.mprotect.listener.SpawnerPortalProtectionListener;
@@ -71,7 +72,7 @@ public final class MProtectPlugin extends JavaPlugin {
                 new AnvilProtectionListener(this), new CommandProtectionListener(this), new CreativeProtectionListener(this),
                 entities, new ChunkLoadProtectionListener(this), new RedstoneAutomationListener(this),
                 new PhysicsProtectionListener(this), new ExplosionProtectionListener(this),
-                new SpawnerPortalProtectionListener(this));
+                new SpawnerPortalProtectionListener(this), new PlayerActivityProtectionListener(this));
         listeners.forEach(listener -> getServer().getPluginManager().registerEvents(listener, this));
         items.startFallbackScan();
         entities.initializeLoadedChunks();

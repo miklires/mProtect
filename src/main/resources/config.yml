@@ -132,6 +132,21 @@ entities:
   max-per-chunk: 120
   max-per-type-per-chunk: 40
   cancel-excess-spawns: true
+  spawn-rate:
+    events: 80
+    window-seconds: 2
+  per-type-limits:
+    ITEM: 40
+    EXPERIENCE_ORB: 32
+    ARMOR_STAND: 24
+    ITEM_FRAME: 32
+    GLOW_ITEM_FRAME: 32
+    FALLING_BLOCK: 24
+    MINECART: 16
+    CHEST_MINECART: 16
+    HOPPER_MINECART: 12
+    TNT_MINECART: 8
+    TNT: 24
 
 chunk-loads:
   enabled: true
