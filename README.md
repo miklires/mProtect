@@ -1,6 +1,6 @@
 <div align="center">
   <h1>mProtect</h1>
-  <p>Configurable exploit checks and server hardening for Paper, Purpur, and Folia.</p>
+  <p>Exploit, lag-machine, and event-spam protection for Paper, Purpur, and Folia.</p>
   <p>
     <a href="https://papermc.io/software/paper"><img alt="Paper" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/paper_vector.svg"></a>
     <a href="https://purpurmc.org"><img alt="Purpur" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/purpur_vector.svg"></a>
@@ -26,6 +26,9 @@
 - Unauthorized creative or spectator mode.
 - Excessive entities per chunk and per entity type using maintained counters instead of repeated nearby-entity scans.
 - Excessive player movement into new chunks.
+- Redstone clocks, piston chains, hopper networks, dispensers, fluid loops, fire spread, sculk cascades, and block-physics storms.
+- TNT priming, explosion bursts, oversized blast block lists, spawner bursts, and portal-search or portal-creation abuse.
+- Inventory-click, interaction, block-change, item-drop, and projectile event floods.
 
 Every detection can be written to H2 and JSONL, shown to online staff, and optionally sent to a Discord webhook. English and Russian messages are included.
 
@@ -39,12 +42,12 @@ Every detection can be written to H2 and JSONL, shown to online staff, and optio
 - Paper, Purpur, or Folia 26.2
 - No required plugins or external database
 
-Packet-level exploit filtering is not part of mProtect 1.1. Paper events run after packet decoding, so malformed-packet and window-click-flood protection requires a packet library or proxy. mProtect does not claim protection it cannot provide.
+mProtect protects the server event layer. Malformed packets must be rejected before Bukkit events exist, so use Paper's native packet limiter as described in [Paper hardening](docs/PAPER-HARDENING.md). mProtect does not claim packet interception it cannot perform.
 
 ## Installation
 
 1. Stop the server.
-2. Put `mProtect-1.1.0.jar` into the server's `plugins` directory.
+2. Put `mProtect-1.2.0.jar` into the server's `plugins` directory.
 3. Start the server once to create `plugins/mProtect/config.yml` and the language files.
 4. Review the limits before opening the server to players.
 5. Run `/mprotect status` and `/mprotect test items` from the console or as an administrator.
@@ -82,6 +85,20 @@ Explicit blocked names are checked after removing a namespace, so `/minecraft:op
 
 `chunk-loads` limits how quickly a player may cross into new chunks. Increase the limit for servers where fast elytra travel is expected.
 
+### Lag-machine protection
+
+Every hot-path rule is a bounded O(1) window keyed by chunk, block, or player. No rule scans nearby entities or the whole world:
+
+- `redstone` freezes additional current changes after the per-chunk threshold.
+- `automation` limits piston movement, hopper transfers/pickups, and dispenser actions.
+- `physics` limits block updates, fluids, spreading fire/sculk, and oversized multi-block growth.
+- `explosions` limits TNT priming, explosion frequency, affected blocks, and drop yield.
+- `spawners` applies both per-spawner and per-chunk spawn windows.
+- `portals` bounds portal creation, player use, search radius, and creation radius.
+- `activity` cancels excessive player-generated inventory, interaction, block, drop, and projectile events.
+
+The defaults are intentionally generous for ordinary survival servers. Technical servers should tune one section at a time using `/mprotect status` and `/mprotect violations`. Administrative bypasses exist only for attributable player limits; machine limits have no bypass because most world events have no trustworthy owner.
+
 ### Alerts and storage
 
 - `alerts.staff-chat` sends deduplicated alerts to players with `mprotect.alerts`.
@@ -104,7 +121,7 @@ The alias `/mpr` is also available.
 
 ## Permissions
 
-`mprotect.admin` grants all administrative commands, alerts, and player-attributable bypasses. Individual bypass permissions are available for `items`, `commands`, `books`, `signs`, `anvils`, `creative`, and `chunks`, using the form `mprotect.bypass.<check>`.
+`mprotect.admin` grants all administrative commands, alerts, and player-attributable bypasses. Individual bypass permissions are available for `items`, `commands`, `books`, `signs`, `anvils`, `creative`, `chunks`, `portals`, and `activity`, using the form `mprotect.bypass.<check>`.
 
 Entity spawn limits intentionally have no bypass permission because many spawn events do not have a reliable player initiator.
 
@@ -120,7 +137,7 @@ The update checker only requests public release metadata from Modrinth when `upd
 ./gradlew clean build
 ```
 
-The deployable artifact is `build/libs/mProtect-1.1.0.jar`. Automated tests cover rate windows, configured actions, semantic versions, and storage path containment.
+The deployable artifact is `build/libs/mProtect-1.2.0.jar`. Automated tests cover bounded keyed rate windows, configured actions, semantic versions, and storage path containment.
 
 ## Support
 

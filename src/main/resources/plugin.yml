@@ -3,7 +3,7 @@ version: ${version}
 main: io.github.miklires.mprotect.MProtectPlugin
 api-version: '26.2'
 author: miklires
-description: Configurable exploit checks and server hardening for Paper-compatible servers
+description: Exploit, lag-machine, and event-spam protection for Paper-compatible servers
 load: STARTUP
 folia-supported: true
 libraries:

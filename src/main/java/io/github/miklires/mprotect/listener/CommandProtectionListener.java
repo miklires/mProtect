@@ -2,6 +2,7 @@ package io.github.miklires.mprotect.listener;
 
 import io.github.miklires.mprotect.MProtectPlugin;
 import io.github.miklires.mprotect.check.RateWindow;
+import io.github.miklires.mprotect.check.KeyedRateLimiter;
 import io.github.miklires.mprotect.model.CheckType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
@@ -19,6 +20,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class CommandProtectionListener implements Listener {
     private final MProtectPlugin plugin;
     private final Map<UUID, RateState> rates = new ConcurrentHashMap<>();
+    private final KeyedRateLimiter<UUID> notices = new KeyedRateLimiter<>(4096);
 
     public CommandProtectionListener(MProtectPlugin plugin) { this.plugin = plugin; }
 
@@ -55,12 +57,17 @@ public final class CommandProtectionListener implements Listener {
     }
 
     @EventHandler
-    public void onQuit(PlayerQuitEvent event) { rates.remove(event.getPlayer().getUniqueId()); }
+    public void onQuit(PlayerQuitEvent event) {
+        rates.remove(event.getPlayer().getUniqueId());
+        notices.remove(event.getPlayer().getUniqueId());
+    }
 
     private void block(PlayerCommandPreprocessEvent event, String detail, String message) {
         event.setCancelled(true);
-        plugin.violations().record(event.getPlayer(), CheckType.COMMANDS, detail);
-        plugin.messages().send(event.getPlayer(), message);
+        if (notices.allow(event.getPlayer().getUniqueId(), 1, Duration.ofSeconds(1), System.nanoTime())) {
+            plugin.violations().record(event.getPlayer(), CheckType.COMMANDS, detail);
+            plugin.messages().send(event.getPlayer(), message);
+        }
     }
 
     private record RateState(long revision, RateWindow window) {}

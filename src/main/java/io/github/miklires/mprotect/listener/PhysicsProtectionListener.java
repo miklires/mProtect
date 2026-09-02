@@ -10,8 +10,12 @@ import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockFertilizeEvent;
 import org.bukkit.event.block.BlockFromToEvent;
+import org.bukkit.event.block.BlockBurnEvent;
+import org.bukkit.event.block.BlockIgniteEvent;
 import org.bukkit.event.block.BlockPhysicsEvent;
+import org.bukkit.event.block.BlockReceiveGameEvent;
 import org.bukkit.event.block.BlockSpreadEvent;
+import org.bukkit.event.block.SculkBloomEvent;
 import org.bukkit.event.block.SpongeAbsorbEvent;
 import org.bukkit.event.world.StructureGrowEvent;
 
@@ -44,6 +48,34 @@ public final class PhysicsProtectionListener implements Listener {
         if (allow(spread, ChunkKey.of(event.getBlock()), "physics.spread")) return;
         event.setCancelled(true);
         report("block spread rate exceeded", event.getBlock().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onIgnite(BlockIgniteEvent event) {
+        if (allow(spread, ChunkKey.of(event.getBlock()), "physics.spread")) return;
+        event.setCancelled(true);
+        report("fire ignition rate exceeded", event.getBlock().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onBurn(BlockBurnEvent event) {
+        if (allow(spread, ChunkKey.of(event.getBlock()), "physics.spread")) return;
+        event.setCancelled(true);
+        report("fire update rate exceeded", event.getBlock().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onGameEvent(BlockReceiveGameEvent event) {
+        if (allow(spread, ChunkKey.of(event.getBlock()), "physics.spread")) return;
+        event.setCancelled(true);
+        report("sculk game-event rate exceeded", event.getBlock().getLocation());
+    }
+
+    @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)
+    public void onSculkBloom(SculkBloomEvent event) {
+        if (allow(spread, ChunkKey.of(event.getBlock()), "physics.spread")) return;
+        event.setCancelled(true);
+        report("sculk bloom rate exceeded", event.getBlock().getLocation());
     }
 
     @EventHandler(priority = EventPriority.LOWEST, ignoreCancelled = true)

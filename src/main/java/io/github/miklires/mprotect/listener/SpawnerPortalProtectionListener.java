@@ -24,6 +24,7 @@ public final class SpawnerPortalProtectionListener implements Listener {
     private final KeyedRateLimiter<ChunkKey> spawnerChunks = new KeyedRateLimiter<>(16_384);
     private final KeyedRateLimiter<ChunkKey> portalCreates = new KeyedRateLimiter<>(16_384);
     private final KeyedRateLimiter<UUID> portalPlayers = new KeyedRateLimiter<>(4096);
+    private final KeyedRateLimiter<UUID> portalNotices = new KeyedRateLimiter<>(4096);
 
     public SpawnerPortalProtectionListener(MProtectPlugin plugin) { this.plugin = plugin; }
 
@@ -59,8 +60,10 @@ public final class SpawnerPortalProtectionListener implements Listener {
         int seconds = plugin.config().integer("portals.player-use.window-seconds", 10);
         if (!portalPlayers.allow(event.getPlayer().getUniqueId(), events, Duration.ofSeconds(seconds), System.nanoTime())) {
             event.setCancelled(true);
-            plugin.violations().record(event.getPlayer(), CheckType.PORTALS, "portal use rate exceeded");
-            plugin.messages().send(event.getPlayer(), "blocked");
+            if (portalNotices.allow(event.getPlayer().getUniqueId(), 1, Duration.ofSeconds(1), System.nanoTime())) {
+                plugin.violations().record(event.getPlayer(), CheckType.PORTALS, "portal use rate exceeded");
+                plugin.messages().send(event.getPlayer(), "blocked");
+            }
             return;
         }
         event.setSearchRadius(Math.min(event.getSearchRadius(), plugin.config().integer("portals.max-search-radius", 32)));
@@ -68,7 +71,10 @@ public final class SpawnerPortalProtectionListener implements Listener {
     }
 
     @EventHandler
-    public void onQuit(PlayerQuitEvent event) { portalPlayers.remove(event.getPlayer().getUniqueId()); }
+    public void onQuit(PlayerQuitEvent event) {
+        portalPlayers.remove(event.getPlayer().getUniqueId());
+        portalNotices.remove(event.getPlayer().getUniqueId());
+    }
 
     private Location portalLocation(PortalCreateEvent event) {
         if (event.getEntity() != null) return event.getEntity().getLocation();

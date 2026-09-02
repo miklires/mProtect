@@ -25,6 +25,7 @@ import java.util.UUID;
 public final class PlayerActivityProtectionListener implements Listener {
     private final MProtectPlugin plugin;
     private final KeyedRateLimiter<ActionKey> rates = new KeyedRateLimiter<>(16_384);
+    private final KeyedRateLimiter<UUID> notices = new KeyedRateLimiter<>(4096);
 
     public PlayerActivityProtectionListener(MProtectPlugin plugin) { this.plugin = plugin; }
 
@@ -64,6 +65,7 @@ public final class PlayerActivityProtectionListener implements Listener {
         UUID player = event.getPlayer().getUniqueId();
         for (String action : new String[]{"inventory-clicks", "interactions", "block-changes", "item-drops", "projectiles"})
             rates.remove(new ActionKey(player, action));
+        notices.remove(player);
     }
 
     private void protect(Player player, Cancellable event, String action) {
@@ -73,8 +75,10 @@ public final class PlayerActivityProtectionListener implements Listener {
         int seconds = plugin.config().integer(section + ".window-seconds", 2);
         if (rates.allow(new ActionKey(player.getUniqueId(), action), events, Duration.ofSeconds(seconds), System.nanoTime())) return;
         event.setCancelled(true);
-        plugin.violations().record(player, CheckType.ACTIVITY, action + " rate exceeded");
-        plugin.messages().send(player, "activity-rate");
+        if (notices.allow(player.getUniqueId(), 1, Duration.ofSeconds(1), System.nanoTime())) {
+            plugin.violations().record(player, CheckType.ACTIVITY, action + " rate exceeded");
+            plugin.messages().send(player, "activity-rate");
+        }
     }
 
     private record ActionKey(UUID player, String action) {}

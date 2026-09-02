@@ -2,6 +2,7 @@ package io.github.miklires.mprotect.listener;
 
 import io.github.miklires.mprotect.MProtectPlugin;
 import io.github.miklires.mprotect.check.RateWindow;
+import io.github.miklires.mprotect.check.KeyedRateLimiter;
 import io.github.miklires.mprotect.model.CheckType;
 import org.bukkit.Location;
 import org.bukkit.event.EventHandler;
@@ -18,6 +19,7 @@ import java.util.concurrent.ConcurrentHashMap;
 public final class ChunkLoadProtectionListener implements Listener {
     private final MProtectPlugin plugin;
     private final Map<UUID, RateState> rates = new ConcurrentHashMap<>();
+    private final KeyedRateLimiter<UUID> notices = new KeyedRateLimiter<>(4096);
 
     public ChunkLoadProtectionListener(MProtectPlugin plugin) { this.plugin = plugin; }
 
@@ -36,13 +38,18 @@ public final class ChunkLoadProtectionListener implements Listener {
                         ? new RateState(revision, new RateWindow(limit, Duration.ofSeconds(seconds))) : current);
         if (!state.window().allow(System.nanoTime())) {
             event.setCancelled(true);
-            plugin.violations().record(event.getPlayer(), CheckType.CHUNKS, "chunk movement rate exceeded " + limit + " per " + seconds + "s");
-            plugin.messages().send(event.getPlayer(), "blocked");
+            if (notices.allow(event.getPlayer().getUniqueId(), 1, Duration.ofSeconds(1), System.nanoTime())) {
+                plugin.violations().record(event.getPlayer(), CheckType.CHUNKS, "chunk movement rate exceeded " + limit + " per " + seconds + "s");
+                plugin.messages().send(event.getPlayer(), "blocked");
+            }
         }
     }
 
     @EventHandler
-    public void onQuit(PlayerQuitEvent event) { rates.remove(event.getPlayer().getUniqueId()); }
+    public void onQuit(PlayerQuitEvent event) {
+        rates.remove(event.getPlayer().getUniqueId());
+        notices.remove(event.getPlayer().getUniqueId());
+    }
 
     private record RateState(long revision, RateWindow window) {}
 }
