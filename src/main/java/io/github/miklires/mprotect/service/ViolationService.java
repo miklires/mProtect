@@ -67,6 +67,8 @@ public final class ViolationService {
 
     private void enqueueAlert(ViolationRecord record) {
         AlertKey key = new AlertKey(record.playerId(), record.check(), record.detail());
+        int maximum = plugin.config().integer("alerts.max-pending-buckets", 2048);
+        if (!alerts.containsKey(key) && alerts.size() >= maximum) return;
         AlertBucket bucket = alerts.computeIfAbsent(key, ignored -> new AlertBucket(record));
         bucket.count.incrementAndGet();
         if (bucket.scheduled.compareAndSet(false, true)) {
@@ -99,7 +101,12 @@ public final class ViolationService {
     }
 
     private String sanitize(String detail) {
-        String normalized = detail.replace('\r', ' ').replace('\n', ' ').trim();
+        StringBuilder clean = new StringBuilder(Math.min(detail.length(), 512));
+        for (int index = 0; index < detail.length() && clean.length() < 512; index++) {
+            char character = detail.charAt(index);
+            clean.append(Character.isISOControl(character) ? (char) 32 : character);
+        }
+        String normalized = clean.toString().trim();
         return normalized.length() <= 512 ? normalized : normalized.substring(0, 512);
     }
 

@@ -20,7 +20,7 @@ public final class UpdateChecker {
     public void start() {
         if (!plugin.config().bool("updates.enabled", true)) return;
         String project = plugin.config().text("updates.modrinth-project-id", "").trim();
-        if (project.isEmpty()) return;
+        if (!project.matches("[A-Za-z0-9_-]{3,64}")) return;
         plugin.scheduler().async(() -> check(project));
     }
 

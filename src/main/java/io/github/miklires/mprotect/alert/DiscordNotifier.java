@@ -8,8 +8,10 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.time.Duration;
+import java.util.Set;
 
 public final class DiscordNotifier {
+    private static final Set<String> ALLOWED_HOSTS = Set.of("discord.com", "discordapp.com");
     private final MProtectPlugin plugin;
     private final HttpClient client = HttpClient.newBuilder().connectTimeout(Duration.ofSeconds(5)).build();
 
@@ -24,7 +26,9 @@ public final class DiscordNotifier {
         URI uri;
         try {
             uri = URI.create(configured);
-            if (!"https".equalsIgnoreCase(uri.getScheme())) throw new IllegalArgumentException("HTTPS is required");
+            if (!"https".equalsIgnoreCase(uri.getScheme()) || uri.getHost() == null
+                    || ALLOWED_HOSTS.stream().noneMatch(host -> uri.getHost().equals(host) || uri.getHost().endsWith("." + host)))
+                throw new IllegalArgumentException("A Discord HTTPS webhook is required");
         } catch (IllegalArgumentException exception) {
             plugin.getLogger().warning("Invalid alerts.discord.webhook-url; Discord alerts are disabled");
             return;

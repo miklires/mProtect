@@ -17,6 +17,7 @@ import java.util.Locale;
 import java.util.Map;
 
 public final class ProtectCommand implements BasicCommand {
+    private static final java.util.regex.Pattern PLAYER_NAME = java.util.regex.Pattern.compile("[A-Za-z0-9_]{1,16}");
     private static final DateTimeFormatter TIME = DateTimeFormatter.ofPattern("MM-dd HH:mm").withZone(ZoneId.systemDefault());
     private final MProtectPlugin plugin;
 
@@ -47,6 +48,10 @@ public final class ProtectCommand implements BasicCommand {
 
     private void violations(CommandSender sender, String playerName) {
         if (!allowed(sender, "mprotect.command.violations")) return;
+        if (playerName != null && !PLAYER_NAME.matcher(playerName).matches()) {
+            plugin.messages().send(sender, "invalid-player");
+            return;
+        }
         plugin.store().recent(playerName, 10).thenAccept(records -> reply(sender, () -> showViolations(sender, playerName, records)));
     }
 

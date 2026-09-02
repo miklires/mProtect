@@ -1,4 +1,4 @@
-config-version: 1
+config-version: 2
 
 language:
   default: en_US
@@ -15,6 +15,7 @@ alerts:
   staff-chat: true
   permission: mprotect.alerts
   deduplication-seconds: 3
+  max-pending-buckets: 2048
   file-log: true
   discord:
     enabled: false
@@ -114,7 +115,6 @@ commands:
     - stop
     - restart
   blocked-namespaces:
-    - minecraft
     - bukkit
     - paper
     - purpur

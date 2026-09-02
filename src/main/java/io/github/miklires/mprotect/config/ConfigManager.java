@@ -13,7 +13,7 @@ import java.util.Locale;
 import java.util.Set;
 
 public final class ConfigManager {
-    private static final int VERSION = 1;
+    private static final int VERSION = 2;
     private final MProtectPlugin plugin;
     private Set<Material> blockedMaterials = Set.of();
     private Set<String> blockedCommands = Set.of();
@@ -30,6 +30,12 @@ public final class ConfigManager {
         plugin.reloadConfig();
         FileConfiguration config = plugin.getConfig();
         config.options().copyDefaults(true);
+        int previousVersion = config.getInt("config-version", 0);
+        if (previousVersion < 2) {
+            List<String> namespaces = new java.util.ArrayList<>(config.getStringList("commands.blocked-namespaces"));
+            namespaces.removeIf(value -> value.equalsIgnoreCase("minecraft"));
+            config.set("commands.blocked-namespaces", namespaces);
+        }
         if (config.getInt("config-version", 0) < VERSION) config.set("config-version", VERSION);
         blockedMaterials = materials(config.getStringList("items.blocked-materials"));
         blockedCommands = lower(config.getStringList("commands.blocked"));
@@ -72,6 +78,7 @@ public final class ConfigManager {
         integer(config, "chunk-loads.max-new-chunks", 1, 10_000, 24);
         integer(config, "chunk-loads.window-seconds", 1, 300, 5);
         integer(config, "alerts.deduplication-seconds", 1, 300, 3);
+        integer(config, "alerts.max-pending-buckets", 64, 100_000, 2048);
         integer(config, "storage.retention-days", 1, 3650, 30);
         String storageFile = config.getString("storage.file", "violations");
         if (!io.github.miklires.mprotect.storage.SafeFileName.storage(storageFile).equals(storageFile))
@@ -82,6 +89,9 @@ public final class ConfigManager {
         if (Material.matchMaterial(replacement) == null) invalid(config, "items.replacement", "AIR");
         String language = config.getString("language.default", "en_US");
         if (!Set.of("en_US", "ru_RU").contains(language)) invalid(config, "language.default", "en_US");
+        String permission = config.getString("alerts.permission", "mprotect.alerts");
+        if (permission == null || !permission.matches("[a-z0-9._-]{1,128}"))
+            invalid(config, "alerts.permission", "mprotect.alerts");
     }
 
     private void action(FileConfiguration config, String path, ProtectionAction fallback) {
