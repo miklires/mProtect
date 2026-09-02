@@ -196,6 +196,8 @@ portals:
     events: 4
     window-seconds: 10
   max-created-blocks: 128
+  max-search-radius: 32
+  max-creation-radius: 16
   player-use:
     events: 8
     window-seconds: 10

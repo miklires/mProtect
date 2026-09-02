@@ -8,10 +8,12 @@ import io.github.miklires.mprotect.listener.ChunkLoadProtectionListener;
 import io.github.miklires.mprotect.listener.CommandProtectionListener;
 import io.github.miklires.mprotect.listener.CreativeProtectionListener;
 import io.github.miklires.mprotect.listener.EntityLimitListener;
+import io.github.miklires.mprotect.listener.ExplosionProtectionListener;
 import io.github.miklires.mprotect.listener.ItemProtectionListener;
 import io.github.miklires.mprotect.listener.PhysicsProtectionListener;
 import io.github.miklires.mprotect.listener.RedstoneAutomationListener;
 import io.github.miklires.mprotect.listener.SignProtectionListener;
+import io.github.miklires.mprotect.listener.SpawnerPortalProtectionListener;
 import io.github.miklires.mprotect.message.Messages;
 import io.github.miklires.mprotect.service.ViolationService;
 import io.github.miklires.mprotect.storage.ViolationStore;
@@ -68,7 +70,8 @@ public final class MProtectPlugin extends JavaPlugin {
         List<Listener> listeners = List.of(items, new BookProtectionListener(this), new SignProtectionListener(this),
                 new AnvilProtectionListener(this), new CommandProtectionListener(this), new CreativeProtectionListener(this),
                 entities, new ChunkLoadProtectionListener(this), new RedstoneAutomationListener(this),
-                new PhysicsProtectionListener(this));
+                new PhysicsProtectionListener(this), new ExplosionProtectionListener(this),
+                new SpawnerPortalProtectionListener(this));
         listeners.forEach(listener -> getServer().getPluginManager().registerEvents(listener, this));
         items.startFallbackScan();
         entities.initializeLoadedChunks();

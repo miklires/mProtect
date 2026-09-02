@@ -94,6 +94,8 @@ public final class ConfigManager {
         rate(config, "spawners.per-chunk", 32, 10);
         rate(config, "portals.create", 4, 10);
         integer(config, "portals.max-created-blocks", 1, 10_000, 128);
+        integer(config, "portals.max-search-radius", 1, 128, 32);
+        integer(config, "portals.max-creation-radius", 1, 128, 16);
         rate(config, "portals.player-use", 8, 10);
         rate(config, "activity.inventory-clicks", 80, 2);
         rate(config, "activity.interactions", 100, 2);

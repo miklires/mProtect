@@ -52,6 +52,9 @@ permissions:
   mprotect.bypass.chunks:
     description: Bypass chunk-load rate limits
     default: false
+  mprotect.bypass.portals:
+    description: Bypass player portal-use limits
+    default: false
   mprotect.admin:
     description: Full administrative access
     default: op
@@ -70,3 +73,4 @@ permissions:
       mprotect.bypass.anvils: true
       mprotect.bypass.creative: true
       mprotect.bypass.chunks: true
+      mprotect.bypass.portals: true
