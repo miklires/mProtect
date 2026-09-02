@@ -13,7 +13,7 @@ import java.util.Locale;
 import java.util.Set;
 
 public final class ConfigManager {
-    private static final int VERSION = 2;
+    private static final int VERSION = 3;
     private final MProtectPlugin plugin;
     private Set<Material> blockedMaterials = Set.of();
     private Set<String> blockedCommands = Set.of();
@@ -77,6 +77,29 @@ public final class ConfigManager {
         integer(config, "entities.max-per-type-per-chunk", 1, 100_000, 40);
         integer(config, "chunk-loads.max-new-chunks", 1, 10_000, 24);
         integer(config, "chunk-loads.window-seconds", 1, 300, 5);
+        rate(config, "redstone", 800, 1);
+        rate(config, "automation.pistons", 80, 1);
+        integer(config, "automation.pistons.max-blocks-per-move", 1, 64, 12);
+        rate(config, "automation.hoppers", 300, 1);
+        rate(config, "automation.dispensers", 120, 1);
+        rate(config, "physics.block-updates", 1200, 1);
+        rate(config, "physics.fluids", 500, 1);
+        rate(config, "physics.spread", 300, 1);
+        integer(config, "physics.max-multi-block-changes", 1, 100_000, 512);
+        rate(config, "explosions", 12, 2);
+        integer(config, "explosions.max-affected-blocks", 0, 100_000, 256);
+        decimal(config, "explosions.max-yield", 0.0, 1.0, 0.3);
+        rate(config, "explosions.tnt-prime", 24, 2);
+        rate(config, "spawners.per-block", 8, 10);
+        rate(config, "spawners.per-chunk", 32, 10);
+        rate(config, "portals.create", 4, 10);
+        integer(config, "portals.max-created-blocks", 1, 10_000, 128);
+        rate(config, "portals.player-use", 8, 10);
+        rate(config, "activity.inventory-clicks", 80, 2);
+        rate(config, "activity.interactions", 100, 2);
+        rate(config, "activity.block-changes", 80, 2);
+        rate(config, "activity.item-drops", 40, 2);
+        rate(config, "activity.projectiles", 30, 2);
         integer(config, "alerts.deduplication-seconds", 1, 300, 3);
         integer(config, "alerts.max-pending-buckets", 64, 100_000, 2048);
         integer(config, "storage.retention-days", 1, 3650, 30);
@@ -109,6 +132,11 @@ public final class ConfigManager {
         if (!Double.isFinite(value) || value < min || value > max) invalid(config, path, fallback);
     }
 
+    private void rate(FileConfiguration config, String section, int events, int seconds) {
+        integer(config, section + ".events", 1, 1_000_000, events);
+        integer(config, section + ".window-seconds", 1, 300, seconds);
+    }
+
     private void invalid(FileConfiguration config, String path, Object fallback) {
         plugin.getLogger().warning("Invalid config value at " + path + "; using " + fallback);
         config.set(path, fallback);
@@ -135,7 +163,8 @@ public final class ConfigManager {
 
     public boolean enabled(CheckType type) {
         String section = switch (type) {
-            case ITEMS, BOOKS, SIGNS, ANVILS, COMMANDS, CREATIVE, ENTITIES -> type.key();
+            case ITEMS, BOOKS, SIGNS, ANVILS, COMMANDS, CREATIVE, ENTITIES, REDSTONE, AUTOMATION,
+                    PHYSICS, EXPLOSIONS, SPAWNERS, PORTALS, ACTIVITY -> type.key();
             case CHUNKS -> "chunk-loads";
         };
         return plugin.getConfig().getBoolean(section + ".enabled", true);

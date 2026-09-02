@@ -1,4 +1,4 @@
-config-version: 2
+config-version: 3
 
 language:
   default: en_US
@@ -137,3 +137,83 @@ chunk-loads:
   enabled: true
   max-new-chunks: 24
   window-seconds: 5
+
+# Lag-machine protection uses bounded per-chunk or per-player windows. Raise
+# limits for technical servers; disabling one section does not affect others.
+redstone:
+  enabled: true
+  events: 800
+  window-seconds: 1
+
+automation:
+  enabled: true
+  pistons:
+    events: 80
+    window-seconds: 1
+    max-blocks-per-move: 12
+  hoppers:
+    events: 300
+    window-seconds: 1
+  dispensers:
+    events: 120
+    window-seconds: 1
+
+physics:
+  enabled: true
+  block-updates:
+    events: 1200
+    window-seconds: 1
+  fluids:
+    events: 500
+    window-seconds: 1
+  spread:
+    events: 300
+    window-seconds: 1
+  max-multi-block-changes: 512
+
+explosions:
+  enabled: true
+  events: 12
+  window-seconds: 2
+  max-affected-blocks: 256
+  max-yield: 0.3
+  tnt-prime:
+    events: 24
+    window-seconds: 2
+
+spawners:
+  enabled: true
+  per-block:
+    events: 8
+    window-seconds: 10
+  per-chunk:
+    events: 32
+    window-seconds: 10
+
+portals:
+  enabled: true
+  create:
+    events: 4
+    window-seconds: 10
+  max-created-blocks: 128
+  player-use:
+    events: 8
+    window-seconds: 10
+
+activity:
+  enabled: true
+  inventory-clicks:
+    events: 80
+    window-seconds: 2
+  interactions:
+    events: 100
+    window-seconds: 2
+  block-changes:
+    events: 80
+    window-seconds: 2
+  item-drops:
+    events: 40
+    window-seconds: 2
+  projectiles:
+    events: 30
+    window-seconds: 2

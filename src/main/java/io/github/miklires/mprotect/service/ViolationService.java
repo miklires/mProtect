@@ -2,6 +2,7 @@ package io.github.miklires.mprotect.service;
 
 import io.github.miklires.mprotect.MProtectPlugin;
 import io.github.miklires.mprotect.alert.DiscordNotifier;
+import io.github.miklires.mprotect.check.KeyedRateLimiter;
 import io.github.miklires.mprotect.model.CheckType;
 import io.github.miklires.mprotect.model.ViolationRecord;
 import io.github.miklires.mprotect.storage.ViolationStore;
@@ -26,6 +27,7 @@ public final class ViolationService {
     private final DiscordNotifier discord;
     private final Map<CheckType, LongAdder> counters = new EnumMap<>(CheckType.class);
     private final ConcurrentHashMap<AlertKey, AlertBucket> alerts = new ConcurrentHashMap<>();
+    private final KeyedRateLimiter<RecordKey> persistence = new KeyedRateLimiter<>(8192);
     private volatile LocalDate counterDate = LocalDate.now(ZoneOffset.UTC);
 
     public ViolationService(MProtectPlugin plugin, ViolationStore store) {
@@ -39,6 +41,7 @@ public final class ViolationService {
         rotateCounters();
         counters.get(type).increment();
         String detail = sanitize(unsafeDetail);
+        if (!persistence.allow(new RecordKey(player.getUniqueId(), type), 1, Duration.ofSeconds(1), System.nanoTime())) return;
         Location location = player.getLocation();
         ViolationRecord record = new ViolationRecord(0, Instant.now(), player.getUniqueId(), player.getName(), type, detail,
                 location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
@@ -49,6 +52,7 @@ public final class ViolationService {
     public void recordSystem(CheckType type, String unsafeDetail, Location location) {
         rotateCounters();
         counters.get(type).increment();
+        if (!persistence.allow(new RecordKey(new UUID(0, 0), type), 1, Duration.ofSeconds(1), System.nanoTime())) return;
         ViolationRecord record = new ViolationRecord(0, Instant.now(), new UUID(0, 0), "server", type, sanitize(unsafeDetail),
                 location.getWorld().getName(), location.getBlockX(), location.getBlockY(), location.getBlockZ());
         store.save(record);
@@ -111,6 +115,7 @@ public final class ViolationService {
     }
 
     private record AlertKey(UUID playerId, CheckType check, String detail) {}
+    private record RecordKey(UUID playerId, CheckType check) {}
     private static final class AlertBucket {
         private final ViolationRecord record;
         private final AtomicInteger count = new AtomicInteger();

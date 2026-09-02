@@ -4,7 +4,8 @@ import java.util.Locale;
 import java.util.Optional;
 
 public enum CheckType {
-    ITEMS, BOOKS, SIGNS, ANVILS, COMMANDS, CREATIVE, ENTITIES, CHUNKS;
+    ITEMS, BOOKS, SIGNS, ANVILS, COMMANDS, CREATIVE, ENTITIES, CHUNKS,
+    REDSTONE, AUTOMATION, PHYSICS, EXPLOSIONS, SPAWNERS, PORTALS, ACTIVITY;
 
     public String key() {
         return name().toLowerCase(Locale.ROOT);
