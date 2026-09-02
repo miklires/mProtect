@@ -2,22 +2,26 @@
   <h1>mProtect</h1>
   <p>Configurable exploit checks and server hardening for Paper, Purpur, and Folia.</p>
   <p>
-    <a href="https://github.com/miklires/mProtect/actions/workflows/build.yml"><img alt="Build" src="https://img.shields.io/github/actions/workflow/status/miklires/mProtect/build.yml?branch=main&style=for-the-badge&label=build"></a>
-    <a href="https://bstats.org/plugin/bukkit/mProtect/33359"><img alt="bStats" src="https://img.shields.io/bstats/servers/33359?style=for-the-badge&label=servers"></a>
-    <img alt="Java 25" src="https://img.shields.io/badge/Java-25-f89820?style=for-the-badge&logo=openjdk&logoColor=white">
+    <a href="https://papermc.io/software/paper"><img alt="Paper" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/paper_vector.svg"></a>
+    <a href="https://purpurmc.org"><img alt="Purpur" height="56" src="https://cdn.jsdelivr.net/npm/@intergrav/devins-badges@3/assets/cozy/supported/purpur_vector.svg"></a>
+    <a href="https://papermc.io/software/folia"><img alt="Folia" height="56" src="https://raw.githubusercontent.com/miklires/mCommand/main/docs/assets/folia-available.png"></a>
   </p>
   <p>
-    <a href="https://modrinth.com/plugin/mprotect"><img alt="Modrinth" src="https://img.shields.io/badge/Modrinth-download-00AF5C?style=for-the-badge&logo=modrinth&logoColor=white"></a>
-    <a href="https://github.com/miklires/mProtect"><img alt="GitHub" src="https://img.shields.io/badge/GitHub-source-181717?style=for-the-badge&logo=github"></a>
-    <a href="https://github.com/miklires/mProtect/issues"><img alt="Issues" src="https://img.shields.io/badge/GitHub-issues-181717?style=for-the-badge&logo=github"></a>
-    <a href="https://discord.gg/pes25cnWKy"><img alt="Discord" src="https://img.shields.io/badge/Discord-support-5865F2?style=for-the-badge&logo=discord&logoColor=white"></a>
+    <a href="https://github.com/miklires/mProtect"><img alt="GitHub" src="https://tr7zw.github.io/uikit/social_buttons_icon/Github-Button-64.png"></a>
+    <a href="https://modrinth.com/plugin/mprotect"><img alt="Modrinth" src="https://tr7zw.github.io/uikit/social_buttons_icon/Modrinth-Button-64.png"></a>
+    <a href="https://discord.gg/pes25cnWKy"><img alt="Discord" src="https://tr7zw.github.io/uikit/social_buttons_icon/Discord-Button-64.png"></a>
+  </p>
+  <p>
+    <a href="https://bstats.org/plugin/bukkit/mProtect/33359"><img alt="bStats" src="https://img.shields.io/badge/bStats-33359-2F9BE6?style=for-the-badge"></a>
+    <a href="https://github.com/miklires/mProtect/releases"><img alt="Release" src="https://img.shields.io/github/v/release/miklires/mProtect?style=for-the-badge"></a>
+    <img alt="Java 25" src="https://img.shields.io/badge/Java-25-5382A1?style=for-the-badge">
   </p>
 </div>
 
 ## What mProtect checks
 
-- Illegal materials, enchantments, attribute modifiers, oversized components, and deeply nested containers.
-- Book pages, titles, total content, serialized components, sign text and click events, and anvil names and costs.
+- Illegal materials, enchantments, attribute modifiers, durability, oversized components, and deeply nested containers.
+- Item names/lore, custom potion effects, fireworks, book pages/authors/titles, sign text/click events, and anvil names/costs.
 - Command length, frequency, blocked commands, namespaces, and roots.
 - Unauthorized creative or spectator mode.
 - Excessive entities per chunk and per entity type using maintained counters instead of repeated nearby-entity scans.
@@ -35,12 +39,12 @@ Every detection can be written to H2 and JSONL, shown to online staff, and optio
 - Paper, Purpur, or Folia 26.2
 - No required plugins or external database
 
-Packet-level exploit filtering is not part of mProtect 1.0. Server software, proxies, and a properly configured firewall should still be kept current.
+Packet-level exploit filtering is not part of mProtect 1.1. Paper events run after packet decoding, so malformed-packet and window-click-flood protection requires a packet library or proxy. mProtect does not claim protection it cannot provide.
 
 ## Installation
 
 1. Stop the server.
-2. Put `mProtect-1.0.0.jar` into the server's `plugins` directory.
+2. Put `mProtect-1.1.0.jar` into the server's `plugins` directory.
 3. Start the server once to create `plugins/mProtect/config.yml` and the language files.
 4. Review the limits before opening the server to players.
 5. Run `/mprotect status` and `/mprotect test items` from the console or as an administrator.
@@ -53,7 +57,7 @@ The generated `config.yml` is the source of truth. Missing options are restored 
 
 ### Items and containers
 
-`items.blocked-materials` contains materials players must not possess. Item validation also rejects overstacked items, unsafe enchantments, duplicate or excessive attribute modifiers, oversized serialized data, and nested shulker boxes or bundles beyond the configured depth and item count. Set `items.reject-overstacked` to `false` only when another plugin intentionally creates stacks above the vanilla limit.
+`items.blocked-materials` contains materials players must not possess. Validation also covers overstacking, enchantments, attributes, durability, names, lore, custom potion effects, fireworks, serialized size, and nested containers. Conservative defaults avoid rejecting intentional unbreakable rewards unless `items.reject-unbreakable` is enabled.
 
 `items.action` accepts:
 
@@ -70,7 +74,7 @@ The `books`, `signs`, and `anvils` sections set character, component, and repair
 
 ### Commands
 
-`commands.blocked` matches command names. `commands.blocked-namespaces` blocks namespaced forms such as `minecraft:op`. `commands.blocked-roots` is intended for command roots whose arguments may execute another command. Length and rate limits are applied before command dispatch.
+Explicit blocked names are checked after removing a namespace, so `/minecraft:op` cannot bypass the `op` rule. Config version 2 no longer blocks every vanilla namespaced command by default. `blocked-namespaces` remains available when an entire plugin namespace must be prohibited.
 
 ### Entities and chunks
 
@@ -92,6 +96,8 @@ The `books`, `signs`, and `anvils` sections set character, component, and repair
 | `/mprotect status` | Show enabled checks and today's counts | `mprotect.command.status` |
 | `/mprotect violations [player]` | Show the ten newest stored violations | `mprotect.command.violations` |
 | `/mprotect test <check>` | Validate a configured check | `mprotect.command.test` |
+| `/mprotect inspect` | Check the held item without modifying it | `mprotect.command.inspect` |
+| `/mprotect scan` | Audit your inventory without modifying it | `mprotect.command.scan` |
 | `/mprotect reload` | Reload safe settings and language files | `mprotect.command.reload` |
 
 The alias `/mpr` is also available.
@@ -114,7 +120,7 @@ The update checker only requests public release metadata from Modrinth when `upd
 ./gradlew clean build
 ```
 
-The deployable artifact is `build/libs/mProtect-1.0.0.jar`. Automated tests cover rate windows, configured protection actions, and semantic version ordering.
+The deployable artifact is `build/libs/mProtect-1.1.0.jar`. Automated tests cover rate windows, configured actions, semantic versions, and storage path containment.
 
 ## Support
 
