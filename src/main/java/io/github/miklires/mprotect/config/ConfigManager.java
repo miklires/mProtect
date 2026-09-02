@@ -64,6 +64,9 @@ public final class ConfigManager {
         integer(config, "chunk-loads.window-seconds", 1, 300, 5);
         integer(config, "alerts.deduplication-seconds", 1, 300, 3);
         integer(config, "storage.retention-days", 1, 3650, 30);
+        String storageFile = config.getString("storage.file", "violations");
+        if (!io.github.miklires.mprotect.storage.SafeFileName.storage(storageFile).equals(storageFile))
+            invalid(config, "storage.file", "violations");
         action(config, "items.action", ProtectionAction.REMOVE);
         action(config, "books.action", ProtectionAction.REMOVE);
         String replacement = config.getString("items.replacement", "AIR");
@@ -129,6 +132,9 @@ public final class ConfigManager {
     public boolean bool(String path, boolean fallback) { return plugin.getConfig().getBoolean(path, fallback); }
     public int integer(String path, int fallback) { return plugin.getConfig().getInt(path, fallback); }
     public double decimal(String path, double fallback) { return plugin.getConfig().getDouble(path, fallback); }
-    public String text(String path, String fallback) { return plugin.getConfig().getString(path, fallback); }
+    public String text(String path, String fallback) {
+        String value = plugin.getConfig().getString(path, fallback);
+        return value == null ? fallback : value;
+    }
     public long revision() { return revision; }
 }

@@ -21,7 +21,6 @@ import org.bukkit.event.Listener;
 import org.bukkit.plugin.java.JavaPlugin;
 
 import java.util.List;
-import java.util.concurrent.CompletionException;
 import java.util.logging.Level;
 
 public final class MProtectPlugin extends JavaPlugin {
@@ -40,11 +39,27 @@ public final class MProtectPlugin extends JavaPlugin {
         messages.load();
         store = new ViolationStore(this);
         violations = new ViolationService(this, store);
-        store.start().exceptionally(exception -> {
-            Throwable failure = exception instanceof CompletionException && exception.getCause() != null ? exception.getCause() : exception;
+        getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
+                event -> event.registrar().register("mprotect", List.of("mpr"), new ProtectCommand(this)));
+        store.start().whenComplete((ignored, exception) -> scheduler.global(() -> finishEnable(exception)));
+
+        if (config.bool("metrics.enabled", true)) {
+            int id = config.integer("metrics.bstats-id", 33359);
+            if (id > 0) new Metrics(this, id);
+        }
+        new UpdateChecker(this).start();
+        getLogger().info("mProtect " + getPluginMeta().getVersion() + " is starting");
+    }
+
+    private void finishEnable(Throwable exception) {
+        if (!isEnabled()) return;
+        if (exception != null) {
+            Throwable failure = exception instanceof java.util.concurrent.CompletionException && exception.getCause() != null
+                    ? exception.getCause() : exception;
             getLogger().log(Level.SEVERE, "Could not initialize violation storage", failure);
-            return null;
-        });
+            getServer().getPluginManager().disablePlugin(this);
+            return;
+        }
 
         ItemProtectionListener items = new ItemProtectionListener(this);
         EntityLimitListener entities = new EntityLimitListener(this);
@@ -55,14 +70,6 @@ public final class MProtectPlugin extends JavaPlugin {
         items.startFallbackScan();
         entities.initializeLoadedChunks();
 
-        getLifecycleManager().registerEventHandler(LifecycleEvents.COMMANDS,
-                event -> event.registrar().register("mprotect", List.of("mpr"), new ProtectCommand(this)));
-
-        if (config.bool("metrics.enabled", true)) {
-            int id = config.integer("metrics.bstats-id", 33359);
-            if (id > 0) new Metrics(this, id);
-        }
-        new UpdateChecker(this).start();
         getLogger().info("mProtect " + getPluginMeta().getVersion() + " enabled");
     }
 

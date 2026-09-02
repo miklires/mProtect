@@ -23,6 +23,7 @@ import java.util.UUID;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 
 public final class ViolationStore implements AutoCloseable {
     private final MProtectPlugin plugin;
@@ -32,7 +33,7 @@ public final class ViolationStore implements AutoCloseable {
 
     public ViolationStore(MProtectPlugin plugin) {
         this.plugin = plugin;
-        String fileName = plugin.config().text("storage.file", "violations").replaceAll("[^A-Za-z0-9._-]", "_");
+        String fileName = SafeFileName.storage(plugin.config().text("storage.file", "violations"));
         Path base = plugin.getDataFolder().toPath().resolve("data");
         this.jdbcUrl = "jdbc:h2:file:" + base.resolve(fileName).toAbsolutePath().toString().replace('\\', '/');
         this.logFile = plugin.getDataFolder().toPath().resolve("violations.jsonl");
@@ -140,5 +141,11 @@ public final class ViolationStore implements AutoCloseable {
     @Override
     public void close() {
         executor.shutdown();
+        try {
+            if (!executor.awaitTermination(5, TimeUnit.SECONDS)) executor.shutdownNow();
+        } catch (InterruptedException exception) {
+            executor.shutdownNow();
+            Thread.currentThread().interrupt();
+        }
     }
 }
