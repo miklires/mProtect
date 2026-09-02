@@ -30,6 +30,8 @@ items:
   action: REMOVE
   replacement: AIR
   reject-overstacked: true
+  # Keep false when another trusted plugin intentionally creates unbreakable rewards.
+  reject-unbreakable: false
   fallback-scan-minutes: 5
   blocked-materials:
     - BEDROCK
@@ -58,6 +60,17 @@ items:
     max-serialized-bytes: 65536
     max-container-depth: 2
     max-container-items: 1728
+  text:
+    max-name-characters: 128
+    max-lore-lines: 64
+    max-lore-line-characters: 512
+    max-lore-total-characters: 4096
+  potions:
+    max-amplifier: 4
+    max-duration-ticks: 72000
+  fireworks:
+    max-power: 3
+    max-effects: 8
 
 books:
   enabled: true
@@ -66,6 +79,7 @@ books:
   max-page-characters: 1024
   max-total-characters: 20000
   max-title-characters: 32
+  max-author-characters: 16
   max-component-json-characters: 32768
   strip-formatting: false
 

@@ -11,6 +11,9 @@ import org.bukkit.inventory.ItemStack;
 import org.bukkit.inventory.meta.BlockStateMeta;
 import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.inventory.meta.BundleMeta;
+import org.bukkit.inventory.meta.Damageable;
+import org.bukkit.inventory.meta.FireworkMeta;
+import org.bukkit.inventory.meta.PotionMeta;
 import org.bukkit.inventory.meta.ItemMeta;
 
 import java.util.Arrays;
@@ -39,6 +42,8 @@ public final class ItemValidator {
         if (!attributes.safe()) return attributes;
         ValidationResult book = book(stack);
         if (!book.safe()) return book;
+        ValidationResult metadata = metadata(stack);
+        if (!metadata.safe()) return metadata;
         if (plugin.config().bool("items.components.enabled", true)) {
             int maxBytes = plugin.config().integer("items.components.max-serialized-bytes", 65_536);
             try {
@@ -105,6 +110,52 @@ public final class ItemValidator {
         String title = meta.getTitle();
         int maxTitle = plugin.config().integer("books.max-title-characters", 32);
         if (title != null && title.length() > maxTitle) return ValidationResult.fail("book title exceeds limit");
+        String author = meta.getAuthor();
+        int maxAuthor = plugin.config().integer("books.max-author-characters", 16);
+        if (author != null && author.length() > maxAuthor) return ValidationResult.fail("book author exceeds limit");
+        return ValidationResult.pass();
+    }
+
+    private ValidationResult metadata(ItemStack stack) {
+        if (!stack.hasItemMeta()) return ValidationResult.pass();
+        ItemMeta meta = stack.getItemMeta();
+        int maxName = plugin.config().integer("items.text.max-name-characters", 128);
+        if (meta.displayName() != null && plain.serialize(meta.displayName()).length() > maxName)
+            return ValidationResult.fail("display name exceeds " + maxName + " characters");
+        int maxLoreLines = plugin.config().integer("items.text.max-lore-lines", 64);
+        int maxLoreLine = plugin.config().integer("items.text.max-lore-line-characters", 512);
+        int maxLoreTotal = plugin.config().integer("items.text.max-lore-total-characters", 4096);
+        if (meta.lore() != null) {
+            if (meta.lore().size() > maxLoreLines) return ValidationResult.fail("lore line count exceeds " + maxLoreLines);
+            int total = 0;
+            for (var line : meta.lore()) {
+                int length = plain.serialize(line).length();
+                total += length;
+                if (length > maxLoreLine) return ValidationResult.fail("lore line exceeds " + maxLoreLine + " characters");
+            }
+            if (total > maxLoreTotal) return ValidationResult.fail("lore total exceeds " + maxLoreTotal + " characters");
+        }
+        if (plugin.config().bool("items.reject-unbreakable", false) && meta.isUnbreakable())
+            return ValidationResult.fail("unbreakable item is not allowed");
+        if (meta instanceof Damageable damageable && stack.getType().getMaxDurability() > 0
+                && (damageable.getDamage() < 0 || damageable.getDamage() > stack.getType().getMaxDurability()))
+            return ValidationResult.fail("damage value is outside the item durability range");
+        if (meta instanceof PotionMeta potion) {
+            int maxAmplifier = plugin.config().integer("items.potions.max-amplifier", 4);
+            int maxDuration = plugin.config().integer("items.potions.max-duration-ticks", 72_000);
+            for (var effect : potion.getCustomEffects()) {
+                if (effect.getAmplifier() < 0 || effect.getAmplifier() > maxAmplifier)
+                    return ValidationResult.fail("potion amplifier exceeds " + maxAmplifier);
+                if (effect.getDuration() < 0 || effect.getDuration() > maxDuration)
+                    return ValidationResult.fail("potion duration exceeds " + maxDuration + " ticks");
+            }
+        }
+        if (meta instanceof FireworkMeta firework) {
+            int maxPower = plugin.config().integer("items.fireworks.max-power", 3);
+            int maxEffects = plugin.config().integer("items.fireworks.max-effects", 8);
+            if (firework.getPower() > maxPower) return ValidationResult.fail("firework power exceeds " + maxPower);
+            if (firework.getEffectsSize() > maxEffects) return ValidationResult.fail("firework effects exceed " + maxEffects);
+        }
         return ValidationResult.pass();
     }
 
@@ -141,6 +192,8 @@ public final class ItemValidator {
         if (!attributes.safe()) return attributes;
         ValidationResult book = book(stack);
         if (!book.safe()) return book;
+        ValidationResult metadata = metadata(stack);
+        if (!metadata.safe()) return metadata;
         int maxBytes = plugin.config().integer("items.components.max-serialized-bytes", 65_536);
         try {
             if (stack.serializeAsBytes().length > maxBytes) return ValidationResult.fail("nested item size exceeds " + maxBytes);
