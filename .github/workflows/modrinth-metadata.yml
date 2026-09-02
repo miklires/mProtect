@@ -28,7 +28,7 @@ jobs:
         run: |
           jq -n --rawfile body README.md --argjson submit "$SUBMIT_REVIEW" '{
             title: "mProtect",
-            description: "Configurable exploit checks and server hardening for Paper, Purpur, and Folia.",
+            description: "Exploit, lag-machine, and event-spam protection for Paper, Purpur, and Folia.",
             body: $body,
             categories: ["management", "optimization", "utility"],
             additional_categories: [],
