@@ -17,7 +17,7 @@ jobs:
           MODRINTH_TOKEN: ${{ secrets.MODRINTH_TOKEN }}
           PROJECT_NAME: mProtect
           SUMMARY: 'Exploit, lag-machine, and event-spam protection for Paper, Purpur, and Folia.'
-          CATEGORIES: '["optimization","management"]'
+          CATEGORIES: '["management","optimization"]'
           ADDITIONAL_CATEGORIES: '["utility"]'
           WIKI_URL: ''
         run: |
