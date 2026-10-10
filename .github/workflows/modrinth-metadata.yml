@@ -71,8 +71,8 @@ jobs:
             exit 0
           fi
           jq -n '{
-            name: "mProtect 1.2.0",
-            version_number: "1.2.0",
+            name: "mProtect 1.2.1",
+            version_number: "1.2.1",
             version_type: "release",
             featured: true,
             game_versions: ["26.3"],
