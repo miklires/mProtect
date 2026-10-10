@@ -1,4 +1,10 @@
-# mProtect 1.2.0
+# Changelog
+
+## 1.2.1 - 2026-10-10
+
+- Added Minecraft 26.3 compatibility and verified the clean build and automated test suite against Paper API 26.3.
+
+## 1.2.0
 
 - Added bounded per-chunk redstone, piston, hopper, dispenser, fluid, fire, sculk, and block-physics protection.
 - Added TNT-prime and explosion windows with configurable affected-block and yield caps.

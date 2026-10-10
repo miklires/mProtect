@@ -35,7 +35,7 @@ Every detection can be written to H2 and JSONL, shown to online staff, and optio
 ## Requirements
 
 - Java 25
-- Paper, Purpur, or Folia 26.2
+- Paper, Purpur, or Folia 26.3
 - No required plugins or external database
 
 mProtect protects the server event layer. Malformed packets must be rejected before Bukkit events exist, so use Paper's native packet limiter as described in [Paper hardening](docs/PAPER-HARDENING.md). mProtect does not claim packet interception it cannot perform.

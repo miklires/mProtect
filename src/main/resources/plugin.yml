@@ -1,7 +1,7 @@
 name: mProtect
 version: ${version}
 main: io.github.miklires.mprotect.MProtectPlugin
-api-version: '26.2'
+api-version: '26.3'
 author: miklires
 description: Exploit, lag-machine, and event-spam protection for Paper-compatible servers
 load: STARTUP

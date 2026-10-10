@@ -75,7 +75,7 @@ jobs:
             version_number: "1.2.0",
             version_type: "release",
             featured: true,
-            game_versions: ["26.2"],
+            game_versions: ["26.3"],
             loaders: ["paper", "purpur", "folia"]
           }' | curl --fail-with-body --request PATCH \
             --header "Authorization: $MODRINTH_TOKEN" \
