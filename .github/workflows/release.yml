@@ -27,6 +27,16 @@ jobs:
           MODRINTH_PROJECT_ID: ${{ secrets.MODRINTH_PROJECT_ID }}
         run: ./gradlew modrinth --no-daemon
       - name: Create GitHub release
+        shell: bash
         env:
           GH_TOKEN: ${{ github.token }}
-        run: gh release create "${GITHUB_REF_NAME}" build/libs/mProtect-1.2.1.jar --title "mProtect 1.2.1" --notes-file CHANGELOG.md
+        run: |
+          set -euo pipefail
+          tag="$GITHUB_REF_NAME"
+          version="${tag#v}"
+          artifact="build/libs/mProtect-${version}.jar"
+          if gh release view "$tag" >/dev/null 2>&1; then
+            gh release upload "$tag" "$artifact" --clobber
+          else
+            gh release create "$tag" "$artifact" --title "mProtect ${version}" --notes-file CHANGELOG.md
+          fi

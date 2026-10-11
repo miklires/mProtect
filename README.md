@@ -43,7 +43,7 @@ mProtect protects the server event layer. Malformed packets must be rejected bef
 ## Installation
 
 1. Stop the server.
-2. Put `mProtect-1.2.0.jar` into the server's `plugins` directory.
+2. Put `mProtect-1.2.1.jar` into the server's `plugins` directory.
 3. Start the server once to create `plugins/mProtect/config.yml` and the language files.
 4. Review the limits before opening the server to players.
 5. Run `/mprotect status` and `/mprotect test items` from the console or as an administrator.
@@ -133,7 +133,7 @@ The update checker only requests public release metadata from Modrinth when `upd
 ./gradlew clean build
 ```
 
-The deployable artifact is `build/libs/mProtect-1.2.0.jar`. Automated tests cover bounded keyed rate windows, configured actions, semantic versions, and storage path containment.
+The deployable artifact is `build/libs/mProtect-1.2.1.jar`. Automated tests cover bounded keyed rate windows, configured actions, semantic versions, and storage path containment.
 
 ## Support
 
